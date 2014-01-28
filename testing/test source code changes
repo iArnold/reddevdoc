@@ -27,6 +27,8 @@ the project can.
 This is because the directory change will not be reverted after a compilation error in the Red/System compiler step. 
 (Lines 348 – 358 of red.r, fail-try function defined in rsc.r))
 
+*Write tests to ensure that your code will keep working even after others make their changes to the code.
+
 *If all went well, continue your work or send a pull request to github.com/red/red
 
 Good luck!
