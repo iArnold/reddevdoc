@@ -59,13 +59,4 @@ How do actions work?
 Natives
 How do natives work?
 
-How to write tests for Red and Red/System?
-There is a document that describes the way to write tests for Red/System. You can find this on the official red-lang.org website http://static.red-lang.org/red-system-quick-test.html
 
-How to test your changes to the source code?
-Download the sourcecode and extract into a folder. Put a rebol (core) executable for your platform in the main directory.
-Make sure you make or get your changes in here too. 
-Now compile a script that makes use of the changed or added code. 
-do/args %red.r “-c %path/to/testscript.red”
-If your script compiles, test your script.
-If your script does not compile you have to do a cd .. before recompiling. This is because the directory change will not be reverted after a compilation error in the Red/System compiler step. (Lines 348 – 358 of red.r, fail-try function defined in rsc.r)
