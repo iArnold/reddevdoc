@@ -2,12 +2,17 @@
 
 As a general remark it should be stated that it is a good idea to keep a Rebol console at hand when reading the source code.
 
+--The rsc.r script
+
+Q:  What is this rsc.r script about?
+Answer: This is the old compilation script wrapper for Red/System programs. It is still being kept around, 
+maybe one day it can serve another purpose.
 
 ---Assert
 
 Q:  What are all these asserts about?
 Answer:  While assert is not on the documentation page http://www.rebol.com/docs/dictionary.html it is known in Rebol.
-This description is shown when help is used
+This description is shown when help is used:
 ? assert  
 USAGE:
     ASSERT conditions /type
