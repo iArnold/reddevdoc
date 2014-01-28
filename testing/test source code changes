@@ -1,0 +1,32 @@
+===How to test your changes to the source code?
+
+After coding away on the Red source code you want to know if what you did works so you 
+can issue a pull request to get your code accepted by the project. This description of what to do 
+will presume that you do not have a Rebol SDK license, and you cannot encap the source into a binary like 
+the project can.
+
+---Follow these steps
+
+*Download the sourcecode and extract into a folder. 
+
+*Put a Rebol/Core executable for your platform in the main directory. 
+(For *Windows* you will need a *Rebol/View* executable.)
+
+*Make sure you make or get your changes in here too. 
+
+*Run the Red testset to confirm there are no regression errors caused by your new code. Open your Rebol console
+
+  do %run-all.r
+
+*Now compile a script that makes use of the changed or added code. 
+
+  do/args %red.r “-c %path/to/testscript.red”
+
+*If your script compiles, test your script.
+(If your script does not compile you have to do a "cd .." before recompiling the improved script. 
+This is because the directory change will not be reverted after a compilation error in the Red/System compiler step. 
+(Lines 348 – 358 of red.r, fail-try function defined in rsc.r))
+
+*If all went well, continue your work or send a pull request to github.com/red/red
+
+Good luck!
