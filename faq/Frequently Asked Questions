@@ -1,9 +1,50 @@
 ===Frequently Asked Questions
 
+As a general remark it should be stated that it is a good idea to keep a Rebol console at hand when reading the source code.
 
 
 ---Assert
 
-What are all these asserts about? And why is the function declared in 4 different places?
+Q:  What are all these asserts about?
+Answer:  While assert is not on the documentation page http://www.rebol.com/docs/dictionary.html it is known in Rebol.
+This description is shown when help is used
+? assert  
+USAGE:
+    ASSERT conditions /type
+
+DESCRIPTION:
+     Assert that condition is true, else throw an assertion error.
+     ASSERT is a function value.
+
+ARGUMENTS:
+     conditions -- (Type: block)
+
+REFINEMENTS:
+     /type -- Safely check datatypes of variables (words)
+
+(SPECIAL ATTRIBUTES)
+     catch
+     throw
+
+Q:  Why then is assert (re?)defined in 5 different places in the source code?
+Answer: In system/compiler.r the function comp-assert is defined
+In quick-test/quick-test.red and quick-test/quick-test.reds the function --assert is defined
+It is redefined because of extra functionality and because it also must be possible to run the tests independent of
+each other.
+
+---Function definition with set
+
+Q:  Why are some functions defined using "set 'fname" instead of "fname:"?
+Answer: In int-to-bin.r in system/utils a function to-bin32 is defined like this.
+
+===Diverse Questions
+
+---to
+
+Q:  Why is it to-hex and to integer! and why don't you use to-integer, that function exists too?
+Answer: Because to-integer is defined to be a function that does the to integer! casting. Otoh to-hex is a 
+native function that does not have a to hex! equivalent.
+
+
 
 ###
