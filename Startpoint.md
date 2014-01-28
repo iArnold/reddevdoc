@@ -1,7 +1,8 @@
 About the Red source code.
+==========================
 
-
-===Introduction to the Red source code. 
+Introduction to the Red source code. 
+------------------------------------
 
 This documentation is started to save time for newcomers to get knowledge about the sources needed by the Red language project.
 This way more programmers will be able to get up to speed in contributing.
@@ -10,9 +11,11 @@ This part documents the Red sources from the top down.
 
 In the various documents in the subdirectories the sources will be viewed from the bottom up.
 
----How do the parts come together to form the Red Language?
+How do the parts come together to form the Red Language?
+---------------------------------------------------------
 
 The start: script red.r (374 lines)
+----------
 
 The Red source code starts in red.r
 
