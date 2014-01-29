@@ -1,0 +1,8 @@
+Difference between a native and an action
+
+Explained by BrianH:
+
+A native is pretty much called directly, maybe a little argument 
+marshalling but that's it. An action dispatches to a handler associated 
+with the type of the first argument, one of a table of such handlers. 
+The action itself doesn't do much - everything is done by the handler.
