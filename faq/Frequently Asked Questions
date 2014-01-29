@@ -50,6 +50,13 @@ Q:  Why is it to-hex and to integer! and why don't you use to-integer, that func
 Answer: Because to-integer is defined to be a function that does the to integer! casting. Otoh to-hex is a 
 native function that does not have a to hex! equivalent.
 
+---
+Q:  Why do you need to use Rebol/View to run the tests on Windows?
+Answer: (By Peter W.A. Wood) Rebol/View is needed to run the tests under Windows as it uses Nenad's call.r 
+due to the bugs in Rebol's call in 2.7.8. This involves linking to a library which is not supported in Rebol/Core.
 
+Q:  Will the quick-test documents for Red be updated soon? I saw some typo's in the docs, shall I fix them?
+Answer: (By Peter W.A. Wood) I am in the process of updating the Quick-Test documents so don't worry about any 
+typos just yet. There'll no doubt be plenty for you to find later :-)
 
 ###
