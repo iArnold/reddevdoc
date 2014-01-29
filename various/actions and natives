@@ -6,3 +6,17 @@ A native is pretty much called directly, maybe a little argument
 marshalling but that's it. An action dispatches to a handler associated 
 with the type of the first argument, one of a table of such handlers. 
 The action itself doesn't do much - everything is done by the handler.
+
+Adding more actions makes it more difficult to implement datatypes. 
+That is why R3 has fewer actions than R2, why some former actions 
+are now natives.
+
+===
+Doc introduced native and action tables on 26 december 2012:
+
+I didn't need native/action tables until now, the interpreter made 
+me add them sooner than I planned. Extending Red with new natives 
+is already possible using simply routines. For new dynamically added 
+datatypes , it will be soon possible too at Red/System level and 
+with an appropriate interface, from Red directly (with routines when 
+needed).
