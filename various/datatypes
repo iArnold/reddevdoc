@@ -1,0 +1,45 @@
+Datatypes
+
+On 19 nov 2012 Jerry summed up the datatype in Red:
+
+Now Red supports 21 datatypes. In the following R3 datatype list, 
+datatypes with a minus prefix are not supported in Red yet.
+
+
+action -binary -bitset block char -closure -command datatype -date 
+-decimal -email -end -error -event -file -frame function get-path 
+get-word -gob -handle -image integer -issue -library lit-path lit-word 
+logic -map -module -money native none -object op -pair -paren path 
+-percent -port -rebcode refinement set-path set-word string -struct 
+-tag -task -time -tuple -typeset unset -url -utype -vector word
+
+---
+
+Doc replied the next day:
+Jerry: command!, end!, frame! and rebcode! are very unlikely to be 
+adopted in Red. Also following will probably not be part of Red too 
+(or not in a near future): event!, gob!, handle!. Meaning of decimal! 
+will most probably be changed, float! or real! will be used instead. 
+Money! will receive a different treatment than in REBOL (number of 
+digits after comma will probably be adjustable).
+
+
+Also, expect the return of hash! in Red, and new datatypes that do 
+not exists in REBOL.
+
+As you can see, it is not a 1-1 matching between Red and R3.
+
+---
+
+March 9 2013 Doc mentions
+I'm counting 27 datatypes implemented so far in Red. The next on 
+the list will be: typeset!, errror!, object!, port!, binary!. Although, 
+I'm not sure in which precise order they will be added (especially 
+for error! and object!, not sure which one I'll do first).
+
+
+For other datatypes, like float!, date! and time!, which are not 
+a requirement for building Red core itself, I would like them to 
+be contributed if possible. I could provide a sample empty datatype 
+file and instructions on how to use Red's current internal API to 
+anyone willing to work on them.
