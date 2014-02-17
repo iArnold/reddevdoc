@@ -1,0 +1,18 @@
+ENUM
+=====
+
+An enum is a list of items that get numbered. This helps determining the items on the list.
+
+The way ENUM works in the Red source is this.
+
+#ENUM is a compiler-directive in the compiler.r script in /system/
+
+In the function comp-directive it is declared in the switch.
+
+#ENUM invokes the function proces-enum. 
+
+In this function the enumerated list gets a place in memory and each of the items in the list gets a value assigned. 
+
+When new items are added to the list or items get dropped or the order changes the items will get different numbers 
+but this does not matter because whenever one of the items is used its value is really used and this value will 
+be constant for this compilation.
