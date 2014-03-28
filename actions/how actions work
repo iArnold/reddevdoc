@@ -7,7 +7,8 @@ RN:I'm a bit confused about the initialization in boot.red.
 Especially by make: make action! .... Which make action is used before that and which is it set to?
 
 DK:There's a trick used there by the compiler to escape the chicken and egg problem.
-MAKE is predefined in the compiler internals, so that the make: make action! ... expression works. 
+MAKE is predefined in the compiler internals https://github.com/red/red/blob/master/compiler.r#L74, 
+so that the make: make action! ... expression works. 
 This expression creates an entry for MAKE in the runtime environment only 
 (while other function definitions are also collected by the compiler internally).
 So the first make: is creating the MAKE word and MAKE action in the runtime environment 
