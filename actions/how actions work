@@ -1,3 +1,28 @@
 ===Actions
 
 How do actions work?
+On the SO chat in the room red-development-team Richard Nyberg asked about actions:
+
+RN:I'm a bit confused about the initialization in boot.red.
+Especially by make: make action! .... Which make action is used before that and which is it set to?
+
+DK:There's a trick used there by the compiler to escape the chicken and egg problem.
+MAKE is predefined in the compiler internals, so that the make: make action! ... expression works. 
+This expression creates an entry for MAKE in the runtime environment only 
+(while other function definitions are also collected by the compiler internally).
+So the first make: is creating the MAKE word and MAKE action in the runtime environment 
+mainly for dynamic code use cases (typically, code processed by the interpreter).
+The compiler also collects such kind of definitions, but it doesn't need actions in the 
+runtime environment as it will generate direct calls to underlying Red/System static version 
+of these actions (implemented in actions.reds). 
+Let me know if I'm not clear enough.
+
+RN:So it's there to ensure that the MAKE word exists and is bound to the MAKE action in the 
+global runtime environment? I think I get it. :)
+
+DK:I wasn't accurate enough in so that ... expression works,
+you should read so that ... expression compiles.
+Exactly.
+
+DK:One thing that is probably confusing is that the compiler has to 
+generate extra code and structures to please the interpreter (and the future JIT-compiler).
