@@ -27,3 +27,14 @@ Exactly.
 
 DK:One thing that is probably confusing is that the compiler has to 
 generate extra code and structures to please the interpreter (and the future JIT-compiler).
+
+
+AvH:How do you handle a refinement on an action?
+
+DK:The same way as for natives. ;-)
+Refinements are encoded on the native stack as integers following the order by which they 
+are defined in the spec block. 
+-1 means "not used", 0 or positive value gives the position on the Red stack  
+for optional arguments.
+For examples of handling refinements in actions, see runtime/actions.reds.
+
