@@ -1,5 +1,12 @@
 ===Actions
 
+What are actions exactly?
+Datatypes are acting like built-in classes, actions are their methods.
+Actions are expensives, so when the polymorphism is limited, or when the specific code 
+for each supported datatype is small enough, we chose to implement the feature as a 
+native rather than an action.
+Basically, actions cover three domains: arithmetic operations, basic series manipulations and I/O accesses.
+
 How do actions work?
 On the SO chat in the room red-development-team Richard Nyberg asked about actions:
 
