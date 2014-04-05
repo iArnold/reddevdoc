@@ -3,3 +3,28 @@
 How does the stack work?
 
 ###
+
+Understanding the stack is an important part of understanding how certain parts of Red work.
+
+A stack is a portion of memory dedicated to keep trackof which value to use for the series of programstep that must be
+performed to make your program do what you want it to do.
+
+To help do the bookkeeping for the program there are stacks where the computer can store variables.
+
+In Red the stack and stac functions are defined in the stack.reds file.
+
+Here you find the stack context.
+
+Most important functions of the stack are push* push and pop.
+
+push*
+
+push
+
+pop
+
+  pop gives back a value from the stack.
+
+Last action of push is a call to push*
+
+.
