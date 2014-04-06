@@ -45,3 +45,10 @@ are defined in the spec block.
 for optional arguments.
 For examples of handling refinements in actions, see runtime/actions.reds.
 
+
+insert* is just the higher-level entry point for the INSERT action. Both the compiler and 
+interpreter will invoke it with the refinement values set according to the calling expression.
+
+The trailing * is a convention used in Red runtime to refer to a function that takes argument 
+from the (Red) stack. The version without * is the action version that passes arguments directly.
+
