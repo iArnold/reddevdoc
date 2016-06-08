@@ -29,6 +29,11 @@ Here as an example WHILE
   	#get-definition NAT_WHILE
   ]
 
+Notice there is a line
+  #define NATIVES_NB		100							;-- max number of natives (arbitrary set)
+
+Be sure to not add the 101st native function ;-)
+
 
 That is about all it takes, but beware, things are pretty precise at the low level (bytes are not integers, pointers mut be of correct type etc).
 
