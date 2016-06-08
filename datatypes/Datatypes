@@ -1,6 +1,496 @@
 ===Datatypes
 
 What datatypes are supported and how does Red organize the support for a datatype?
+Datatypes in Red and Red/System.
+
+Where do some datatypes com from?
+
+%system\runtime\common.reds
+===========================
+#define zero? 		  [0 =]
+#define positive?	  [0 < ]				;-- space required after the lesser-than symbol
+#define negative?	  [0 > ]
+#define negate		  [0 -]
+#define null?		  [null =]
+
+#define halt		  [quit 0]
+#define forever		  [while [true]]
+#define does		  [func []]
+#define unless		  [if not]
+#define	raise-error	  ***-on-quit
+#define probe		  print-line
+ 
+#define as-byte		  [as byte!]
+#define as-logic	  [as logic!]
+#define as-integer	  [as integer!]
+#define as-float	  [as float!]
+#define as-float32	  [as float32!]
+#define as-c-string	  [as c-string!]
+ 
+#define null-byte	  #"^(00)"
+#define yes			  true
+#define no			  false
+#define on			  true
+#define off			  false
+
+#define byte-ptr!	  [pointer! [byte!]]
+#define int-ptr!	  [pointer! [integer!]]
+#define make-c-string [as c-string! allocate]
+
+#define type-logic!		1					;-- type ID list for 'typeinfo attribut
+#define type-integer!	2
+#define type-byte!	    3
+#define type-float32!	4
+#define type-float64!	5					;-- float! is just an alias for float64!
+#define type-float!		5
+#define type-c-string!  6
+#define type-byte-ptr!  7
+#define type-int-ptr!	8
+#define type-function!	9
+#define type-struct!	1000
+#define any-struct?		[1000 <=]
+#define alias?  		[1001 <=]
+
+
+newline: "^/"
+
+lf:  	 #"^/"								;-- Line-feed
+cr:  	 #"^M"
+tab: 	 #"^-"
+space:	 #" "
+slash:	 #"/"
+esc:	 #"^["
+
+pi: 3.141592653589793
+
+str-array!: alias struct! [
+	item [c-string!]
+]
+
+typed-value!: alias struct! [
+	type	 [integer!]	
+	value	 [integer!]
+	_padding [integer!]						;-- extra space for 64-bit values
+]
+
+typed-float!: alias struct! [
+	type	 [integer!]	
+	value	 [float!]
+]
+
+%runtime\allocator.reds
+=======================
+#define _512KB				524288
+#define _1MB				1048576
+#define _2MB				2097152
+#define _16MB				16777216
+#define nodes-per-frame		10000
+#define node-frame-size		[((nodes-per-frame * 2 * size? pointer!) + size? node-frame!)]
+
+#define series-in-use		80000000h		;-- mark a series as used (not collectable by the GC)
+#define flag-ins-both		30000000h		;-- optimize for both head & tail insertions
+#define flag-ins-tail		20000000h		;-- optimize for tail insertions
+#define flag-ins-head		10000000h		;-- optimize for head insertions
+#define flag-series-big		01000000h		;-- 1 = big, 0 = series
+#define flag-series-small	00800000h		;-- series <= 16 bytes
+#define flag-series-stk		00400000h		;-- values block allocated on stack
+#define flag-series-nogc	00200000h		;-- protected from GC (system-critical series)
+#define flag-series-fixed	00100000h		;-- series cannot be relocated (system-critical series)
+#define flag-bitset-not		00080000h		;-- complement flag for bitsets
+#define flag-UTF16-cache	00040000h		;-- UTF-16 encoding for string cache buffer
+#define flag-series-owned	00020000h		;-- series is owned by an object
+#define flag-owned			00010000h		;-- cell is owned by an object. (for now only image! use it)
+#define flag-owner			00010000h		;-- object is an owner (carried by object's context value)
+#define flag-native-op		00010000h		;-- operator is made from a native! function
+
+#define flag-new-line		40000000h		;-- if set, indicates that a new-line preceeds the value
+#define flag-nl-mask		BFFFFFFFh		;-- mask for new-line flag
+#define flag-arity-mask		C1FFFFFFh		;-- mask for reading routines arity field
+#define flag-self-mask		01000000h		;-- mask for self? flag
+#define body-flag			00800000h		;-- flag for op! body node
+#define tuple-size-mask		00780000h		;-- mask for reading tuple size field
+#define flag-unit-mask		FFFFFFE0h		;-- mask for reading unit field in series-buffer!
+#define get-unit-mask		0000001Fh		;-- mask for setting unit field in series-buffer!
+#define series-free-mask	7FFFFFFFh		;-- mark a series as used (not collectable by the GC)
+#define flag-not-mask		FFF7FFFFh		;-- mask for complement flag
+
+#define type-mask			FFFFFF00h		;-- mask for clearing type ID in cell header
+#define get-type-mask		000000FFh		;-- mask for reading type ID in cell header
+#define node!				int-ptr!
+#define default-offset		-1				;-- for offset value in alloc-series calls
+
+#define series!				series-buffer! 
+
+
+int-array!: alias struct! [ptr [int-ptr!]]
+
+;-- cell header bits layout --
+;   31:		lock							;-- lock series for active thread access only
+;   30:		new-line						;-- new-line (LF) marker (before the slot)
+;	29-25:	arity							;-- arity for routine! functions.
+;	24:		self?							;-- self-aware context flag
+;	23:		node-body						;-- op! body points to a block node (instead of native code)
+;	22-19:	tuple-size						;-- size of tuple
+;	18:		series-owned					;-- mark a series owned by an object
+;	17:		owner							;-- indicate that an object is an owner
+;	16:		native! op						;-- operator is made from a native! function
+;   15-8:	<reserved>
+;   7-0:	datatype ID						;-- datatype number
+
+cell!: alias struct! [
+	header	[integer!]						;-- cell's header flags
+	data1	[integer!]						;-- placeholders to make a 128-bit cell
+	data2	[integer!]
+	data3	[integer!]
+]
+
+;-- series flags --
+;	31: 	used 							;-- 1 = used, 0 = free
+;	30: 	type 							;-- always 0 for series-buffer!
+;	29-28: 	insert-opt						;-- optimized insertions: 2 = head, 1 = tail, 0 = both
+;   27:		mark							;-- mark as referenced for the GC (mark phase)
+;   26:		lock							;-- lock series for active thread access only
+;   25:		immutable						;-- mark as read-only
+;   24:		big								;-- indicates a big series (big-frame!)
+;	23:		small							;-- reserved
+;	22:		stack							;-- series buffer is allocated on stack
+;   21:		permanent						;-- protected from GC (system-critical series)
+;   20:     fixed							;-- series cannot be relocated (system-critical series)
+;	19:		complement						;-- complement flag for bitsets
+;	18:		UTF-16 cache					;-- signifies that the string cache is UTF-16 encoded (UTF-8 by default)
+;	17:		owned							;-- series is owned by an object
+;	16-3: 	<reserved>
+;	4-0:	unit							;-- size in bytes of atomic element stored in buffer
+											;-- 0: UTF-8, 1: Latin1/binary, 2: UCS-2, 4: UCS-4, 16: block! cell
+series-buffer!: alias struct! [
+	flags	[integer!]						;-- series flags
+	node	[int-ptr!]						;-- point back to referring node
+	size	[integer!]						;-- usable buffer size (series-buffer! struct excluded)
+	offset	[cell!]							;-- series buffer offset pointer (insert at head optimization)
+	tail	[cell!]							;-- series buffer tail pointer 
+]
+
+series-frame!: alias struct! [				;-- series frame header
+	next	[series-frame!]					;-- next frame or null
+	prev	[series-frame!]					;-- previous frame or null
+	heap	[series-buffer!]				;-- point to allocatable region
+	tail	[byte-ptr!]						;-- point to last byte in allocatable region
+]
+
+node-frame!: alias struct! [				;-- node frame header
+	next	[node-frame!]					;-- next frame or null
+	prev	[node-frame!]					;-- previous frame or null
+	nodes	[integer!]						;-- number of nodes
+	bottom	[int-ptr!]						;-- bottom of stack (last entry, fixed)
+	top		[int-ptr!]						;-- top of stack (first entry, moving)
+]
+
+big-frame!: alias struct! [					;-- big frame header (for >= 2MB series)
+	flags	[integer!]						;-- bit 30: 1 (type = big)
+	next	[big-frame!]					;-- next frame or null
+	size	[integer!]						;-- size (up to 4GB - size? header)
+	padding [integer!]						;-- make this header same size as series-buffer! header
+]
+
+memory: declare struct! [					; TBD: instanciate this structure per OS thread
+	total	 [integer!]						;-- total memory size allocated (in bytes)
+	n-head	 [node-frame!]					;-- head of node frames list
+	n-active [node-frame!]					;-- actively used node frame
+	n-tail	 [node-frame!]					;-- tail of node frames list
+	s-head	 [series-frame!]				;-- head of series frames list
+	s-active [series-frame!]				;-- actively used series frame
+	s-tail	 [series-frame!]				;-- tail of series frames list
+	s-start	 [integer!]						;-- start size for new series frame		(1)
+	s-size	 [integer!]						;-- current size for new series frame	(1)
+	s-max	 [integer!]						;-- max size for new series frames		(1)
+	b-head	 [big-frame!]					;-- head of big frames list
+]
+
+%runtime\datatypes\structures.reds
+==================================
+#define red-value!	cell!
+
+red-datatype!: alias struct! [
+	header 	[integer!]								;-- cell header
+	value	[integer!]								;-- datatype ID
+	_pad2	[integer!]
+	_pad3	[integer!]
+]
+
+red-unset!: alias struct! [
+	header 	[integer!]								;-- cell header only, no payload
+	_pad1	[integer!]
+	_pad2	[integer!]
+	_pad3	[integer!]
+]
+
+red-none!: alias struct! [
+	header 	[integer!]								;-- cell header only, no payload
+	_pad1	[integer!]
+	_pad2	[integer!]
+	_pad3	[integer!]
+]
+
+red-logic!: alias struct! [
+	header 	[integer!]								;-- cell header
+	value	[logic!]								;-- 1: TRUE, 0: FALSE
+	_pad1	[integer!]
+	_pad2	[integer!]
+]
+
+red-series!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- series's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- datatype-specific extra value
+]
+
+red-block!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- block's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- (reserved for block-derivative types)
+]
+
+red-paren!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- paren's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- (unused, for compatibility with block!)
+]
+
+red-path!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- path's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	args	[node!]									;-- cache for function+refinements args block
+]
+
+red-lit-path!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- path's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- (unused, for compatibility with block!)
+]
+
+red-set-path!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- path's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- (unused, for compatibility with block!)
+]
+
+red-get-path!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- path's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	extra	[integer!]								;-- (unused, for compatibility with block!)
+]
+
+red-string!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- string's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	cache	[c-string!]								;-- UTF-8 cached version of the string (experimental)
+]
+
+red-file!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- string's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	cache	[c-string!]								;-- UTF-8 cached version of the string (experimental)
+]
+
+red-url!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- string's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	cache	[c-string!]								;-- UTF-8 cached version of the string (experimental)
+]
+
+red-binary!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- string's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	_pad	[integer!]
+]
+
+red-bitset!: alias struct! [
+	header 	[integer!]								;-- cell header
+	_pad1	[integer!]
+	node	[node!]									;-- series node pointer
+	_pad2	[integer!]
+]
+
+red-symbol!: alias struct! [
+	header 	[integer!]								;-- cell header
+	alias	[integer!]								;-- Alias symbol index
+	node	[node!]									;-- string series node pointer
+	cache	[c-string!]								;-- UTF-8 cached version of the string (experimental)
+]
+
+red-integer!: alias struct! [
+	header 	[integer!]								;-- cell header
+	padding	[integer!]								;-- align value on 64-bit boundary
+	value	[integer!]								;-- 32-bit signed integer value
+	_pad	[integer!]	
+]
+
+red-float!: alias struct! [
+	header 	[integer!]								;-- cell header
+	padding [integer!]
+	value	[float!]								;-- 64-bit float value
+]
+
+red-float32!: alias struct! [
+	header 	[integer!]								;-- cell header
+	padding [integer!]
+	value	[float32!]								;-- 32-bit float value
+	_pad	[integer!]
+]
+
+red-context!: alias struct! [
+	header 	[integer!]								;-- cell header
+	symbols	[node!]									;-- array of symbols ID
+	values	[node!]									;-- block of values (do not move this field!)
+	self	[node!]									;-- indirect auto-reference (optimization)
+]
+
+red-object!: alias struct! [
+	header 	[integer!]								;-- cell header
+	ctx		[node!]									;-- context reference
+	class	[integer!]								;-- class ID
+	on-set	[node!]									;-- on-set callback info
+]
+
+red-word!: alias struct! [
+	header 	[integer!]								;-- cell header
+	ctx		[node!]									;-- context reference
+	symbol	[integer!]								;-- index in symbol table
+	index	[integer!]								;-- index in context
+]
+
+red-refinement!: alias struct! [
+	header 	[integer!]								;-- cell header
+	ctx		[node!]									;-- context reference
+	symbol	[integer!]								;-- index in symbol table
+	index	[integer!]								;-- index in context
+]
+
+red-char!: alias struct! [
+	header 	[integer!]								;-- cell header
+	_pad1	[integer!]
+	value	[integer!]								;-- UCS-4 codepoint
+	_pad2	[integer!]	
+]
+
+red-point!: alias struct! [
+	header 	[integer!]								;-- cell header
+	x		[integer!]								;-- stores an integer! or float32! value
+	y		[integer!]								;-- stores an integer! or float32! value
+	z		[integer!]								;-- stores an integer! or float32! value
+]
+
+red-pair!: alias struct! [
+	header 	[integer!]								;-- cell header
+	padding	[integer!]								;-- align value on 64-bit boundary
+	x		[integer!]								;-- 32-bit signed integer or float32!
+	y		[integer!]								;-- 32-bit signed integer or float32!
+]
+
+red-action!: alias struct! [
+	header 	[integer!]								;-- cell header
+	args	[node!]									;-- list of typed arguments (including optional ones)
+	spec	[node!]									;-- action spec block reference
+	code	[integer!]								;-- native code function pointer
+]
+
+red-native!: alias struct! [
+	header 	[integer!]								;-- cell header
+	args	[node!]									;-- list of typed arguments (including optional ones)
+	spec	[node!]									;-- native spec block reference
+	code	[integer!]								;-- native code function pointer
+]
+
+red-op!: alias struct! [
+	header 	[integer!]								;-- cell header
+	args	[node!]									;-- list of typed arguments
+	spec	[node!]									;-- op spec block reference
+	code	[integer!]								;-- native code function pointer
+]
+
+red-function!: alias struct! [
+	header 	[integer!]								;-- cell header
+	ctx		[node!]									;-- function's context
+	spec	[node!]									;-- native spec block buffer reference
+	more	[node!]									;-- additional members storage block:
+	;	body	 [red-block!]						;-- 	function's body block
+	;	args	 [red-block!]						;-- 	list of typed arguments (including optional ones)
+	;	native   [node!]							;-- 	JIT-compiled body (binary!)
+	;   fun		 [red-function!]					;--		(optional) copy of parent function! value (used by op!)
+	;	obj		 [red-context!]						;--		context! pointer for methods
+]
+
+red-routine!: alias struct! [
+	header   [integer!]								;-- cell header
+	ret-type [integer!]								;-- return type (-1 if no return: in spec block)
+	spec	 [node!]								;-- routine spec block buffer reference	
+	more	 [node!]								;-- additional members storage block:
+	;	body	 [red-block!]						;-- 	routine's body block
+	;	args	 [red-block!]						;-- 	list of typed arguments (including optional ones)
+	;	native   [node!]							;-- 	compiled body (binary!)
+	;	fun		 [red-routine!]						;--		(optional) copy of parent routine! value (used by op!)
+]
+
+red-typeset!: alias struct! [
+	header  [integer!]								;-- cell header
+	array1  [integer!]
+	array2  [integer!]
+	array3  [integer!]
+]
+
+red-tuple!: alias struct! [
+	header  [integer!]								;-- cell header
+	array1  [integer!]
+	array2  [integer!]
+	array3  [integer!]
+]
+
+red-vector!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- vector's head index (zero-based)
+	node	[node!]									;-- vector's buffer
+	type	[integer!]								;-- vector elements datatype
+]
+
+red-hash!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- block's head index (zero-based)
+	node	[node!]									;-- series node pointer
+	table	[node!]									;-- additional members of hash table
+	;	size		[integer!]						;-- 	size of keys
+	;	indexes		[node!]							;-- 	optimized: use to refresh hashtable when insert and remove
+	;	flags		[node!]
+	;	keys		[node!]
+	;	blk			[node!]
+	;	n-occupied	[integer!]
+	;	n-buckets	[integer!]
+	;	upper-bound	[integer!]
+]
+
+red-event!: alias struct! [
+	header	[integer!]								;-- cell header
+	type	[integer!]								;-- symbol ID
+	msg		[byte-ptr!]								;-- low-level OS-specific structure
+	flags	[integer!]								;-- bit array
+]
+
+red-image!: alias struct! [
+	header 	[integer!]								;-- cell header
+	head	[integer!]								;-- series's head index (zero-based)
+	node	[node!]									;-- internal buffer or platform-specific handle
+	size	[integer!]								;-- pair of size
+]
 
 
 ###
