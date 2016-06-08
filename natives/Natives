@@ -2,4 +2,34 @@
 
 How do natives work?
 
+Native functions are added in Red/System
+%runtime/natives.reds
+
+Native functions definitions are embedded in a context called "natives".
+Native functions have an asterisk added. 
+
+Context natives comes with its own helper functions.
+
+New native functions are to added before these helper functions.
+
+At the end the new native function must be enlisted within the init function.
+
+To make use of the new native function the new enum for the function must be added to 
+%runtime\macros.reds
+
+Now the native function can be added to 
+%environment\natives.red
+
+Here as an example WHILE
+  while: make native! [[
+  		"Evaluates body as long as condition block returns TRUE"
+  		cond [block!]	"Condition block to evaluate on each iteration"
+  		body [block!]	"Block to evaluate on each iteration"
+  	]
+  	#get-definition NAT_WHILE
+  ]
+
+
+That is about all it takes, but beware, things are pretty precise at the low level (bytes are not integers, pointers mut be of correct type etc).
+
 ###
