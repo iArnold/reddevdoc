@@ -95,7 +95,7 @@ of waiting time at the end of the day).
 
 "
 
-Why is the make-profilable function being called as
+Why is the make-profilable function being defined as
 set 'make-profilable func [][] 
 instead of as
 make-profilable: func [][] 
@@ -104,10 +104,20 @@ make-profilable: func [][]
 Pekr explains: "
 'set example is one trick you can use in REBOL. Normally, 
 when you enclose the function in the object/context, it is accessible 
-via a path notation, e.g. context/make-profitable. When you use 'set 
+via a path notation, e.g. context/make-profilable. When you use 'set 
 aproach, it lives inside the context, but is exposed to the global 
 context, so you can call it directly, or something like that :-)
 "
+
+  universe: context [
+    set 'spees func [num][num * 10]
+    cake: func [num][num * 10]
+  ]
+  spees 3
+
+but cake does not work, cake has to be called like
+  
+  universe/cake 3
 
 Conclusion: it is a tool for tracking and timing program performance
 AND
