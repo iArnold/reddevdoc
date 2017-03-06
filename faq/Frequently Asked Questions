@@ -59,4 +59,30 @@ Q:  Will the quick-test documents for Red be updated soon? I saw some typo's in 
 Answer: (By Peter W.A. Wood) I am in the process of updating the Quick-Test documents so don't worry about any 
 typos just yet. There'll no doubt be plenty for you to find later :-)
 
+# Red/System Notes:
+
+There are dump4 and dump1 for dumping memory (using respectively 32-bit or 8-bit words). You can pass them any valid pointer (including structs).
+
+--- Struct!
+
+The struct member names exist only at compile-time (same as variable names), they don't exist at runtime anymore. It could be possible to extend the compiler in debug mode to store metadata about structs and build a runtime function for pretty printing that, though that's a couple of days of work at least.
+
+--- 
+Q: is there difference between using:
+
+    ptr: GlobalAlloc 0 size? IOleClientSiteImpl!
+    iOleClientSiteImpl: as IOleClientSiteImpl! ptr
+
+and plain:
+
+    iOleClientSiteImpl: declare IOleClientSiteImpl!
+
+?
+
+A: A big difference: the first one will allocate memory dynamically using the special global allocator from Windows API, the second one will statically allocate the memory in the data segment of the final executable (such memory cannot be freed, nor extended).
+
+
+
+
+
 ###
